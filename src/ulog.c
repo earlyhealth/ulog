@@ -122,16 +122,17 @@ void ulog_message(ulog_level_t severity, const char *fmt, ...) {
   }
 
   va_list ap;
-  int i;
   va_start(ap, fmt);
   vsnprintf(s_message, ULOG_MAX_MESSAGE_LENGTH, fmt, ap);
   va_end(ap);
+  ulog_dispatch(severity, s_message);
+}
 
+void ulog_dispatch(ulog_level_t severity, const char *msg) {
+  int i;
   for (i=0; i<ULOG_MAX_SUBSCRIBERS; i++) {
-    if (s_subscribers[i].fn != NULL) {
-      if (severity >= s_subscribers[i].threshold) {
-        s_subscribers[i].fn(severity, s_message);
-      }
+    if (s_subscribers[i].fn != NULL && severity >= s_subscribers[i].threshold) {
+      s_subscribers[i].fn(severity, (char *)msg);
     }
   }
 }
